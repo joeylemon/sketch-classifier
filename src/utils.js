@@ -29,7 +29,7 @@ export function shuffle(arr1, arr2) {
 }
 
 /**
- * Split the dataset into training and testing
+ * Randomly split the dataset into training and testing
  * @param {Array} x Features array
  * @param {Array} y Labels array
  * @param {Number} trainSize The ratio of the training set size

@@ -1,7 +1,6 @@
-import getModel from './model.js'
-import { getDrawings } from './data.js';
-import { drawingToPixels } from './drawing_pixels.js'
-import { SKETCH_NAMES, trainTestSplit, getModelDirectoryPath } from './utils.js'
+import getModel from './src/model.js'
+import { getDataset } from './src/data.js';
+import { trainTestSplit, getModelDirectoryPath } from './src/utils.js'
 
 // How many drawings in each batch?
 const BATCH_SIZE = 200
@@ -11,30 +10,6 @@ const NUM_BATCHES = 50
 
 // Skip the first BATCH_OFFSET batches of each dataset.
 const BATCH_OFFSET = 10
-
-/**
- * Get sketches from the saved files
- * @param {Array<String>} sketches The array of sketch names
- * @param {Number} batchSize The number of drawings to use in each batch
- * @param {Number} batchNum The batch number to grab from the sketch files
- * @returns {Promise<Array>} An array of images and an array of class labels
- */
-async function getDataset(batchSize, batchNum) {
-    let imgs = []
-    let classes = []
-
-    for (let i = 0; i < SKETCH_NAMES.length; i++) {
-        const objs = await getDrawings(`./sketches/full_simplified_${SKETCH_NAMES[i]}.ndjson`, batchSize, batchNum * batchSize)
-
-        // convert the drawing paths to pixel arrays
-        imgs = imgs.concat(objs.map(d => drawingToPixels(d)))
-
-        // set the label for this class
-        classes = classes.concat(new Array(imgs.length).fill(i))
-    }
-
-    return [imgs, classes]
-}
 
 /**
  * Train the model on a single batch

@@ -8,7 +8,7 @@ const IMAGE_CHANNELS = 3
 export async function getModel() {
     try {
         const model = await tf.loadLayersModel(`file:///${getModelDirectoryPath()}/model.json`)
-        console.log(`use saved model ...`)
+        console.log(`use saved model in ${getModelDirectoryPath()} ...`)
 
         const optimizer = tf.train.adam();
         model.compile({

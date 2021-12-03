@@ -1,6 +1,7 @@
 import * as ndjson from 'ndjson'
 import fs from 'fs'
-import readline from 'readline'
+import { drawingToPixels } from './drawing_pixels.js'
+import { SKETCH_NAMES } from './utils.js'
 
 /**
  * Read the first n drawings from the given ndjson file
@@ -30,4 +31,28 @@ export async function getDrawings(file, n, skip = 0) {
             .on("error", err => reject(err))
             .on("end", () => resolve(drawings.slice(0, n)))
     })
+}
+
+/**
+ * Get sketches from the saved files
+ * @param {Array<String>} sketches The array of sketch names
+ * @param {Number} batchSize The number of drawings to use in each batch
+ * @param {Number} batchNum The batch number to grab from the sketch files
+ * @returns {Promise<Array>} An array of images and an array of class labels
+ */
+export async function getDataset(batchSize, batchNum) {
+    let imgs = []
+    let classes = []
+
+    for (let i = 0; i < SKETCH_NAMES.length; i++) {
+        const objs = await getDrawings(`./sketches/full_simplified_${SKETCH_NAMES[i]}.ndjson`, batchSize, batchNum * batchSize)
+
+        // convert the drawing paths to pixel arrays
+        imgs = imgs.concat(objs.map(d => drawingToPixels(d)))
+
+        // set the label for this class
+        classes = classes.concat(new Array(objs.length).fill(i))
+    }
+
+    return [imgs, classes]
 }
