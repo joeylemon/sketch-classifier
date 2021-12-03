@@ -38,5 +38,5 @@ export function trainTestSplit(x, y, trainSize = 0.8) {
     const [trainX, trainY] = [x.slice(0, num_train), y.slice(0, num_train)]
     const [testX, testY] = [x.slice(num_train), y.slice(num_train)]
 
-    return [tf.tensor4d(trainX), tf.tensor1d(trainY), tf.tensor4d(testX), tf.tensor1d(testY)]
+    return [tf.tensor4d(trainX), tf.tensor2d(trainY), tf.tensor4d(testX), tf.tensor2d(testY)]
 }

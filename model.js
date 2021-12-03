@@ -3,7 +3,7 @@ import * as tf from '@tensorflow/tfjs';
 const IMAGE_WIDTH = 256
 const IMAGE_HEIGHT = 256
 const IMAGE_CHANNELS = 3
-const NUM_OUTPUT_CLASSES = 2;
+const NUM_OUTPUT_CLASSES = 3;
 
 const model = tf.sequential()
 
