@@ -44,6 +44,8 @@ export async function getDataset(batchSize, batchNum) {
     let imgs = []
     let classes = []
 
+    const start = Date.now()
+
     for (let i = 0; i < SKETCH_NAMES.length; i++) {
         const objs = await getDrawings(`./sketches/full_simplified_${SKETCH_NAMES[i]}.ndjson`, batchSize, batchNum * batchSize)
 
@@ -53,6 +55,8 @@ export async function getDataset(batchSize, batchNum) {
         // set the label for this class
         classes = classes.concat(new Array(objs.length).fill(i))
     }
+
+    console.log(`loaded ${SKETCH_NAMES.length}*${batchSize} = ${imgs.length} drawings in ${((Date.now() - start) / 2).toFixed(2)} seconds`)
 
     return [imgs, classes]
 }

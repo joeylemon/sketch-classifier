@@ -51,5 +51,13 @@ export function trainTestSplit(x, y, trainSize = 0.8) {
  * @returns {String}
  */
 export function getModelDirectoryPath() {
-    return path.resolve('./model').replace('C:\\', '').replace(/\\/g, '/')
+    return path.resolve('./model').replace('C:\\', '').split(path.sep).join(path.posix.sep)
+}
+
+/**
+ * Get the absolute file path to the saved model JSON file
+ * @returns {String}
+ */
+export function getModelFilePath() {
+    return getModelDirectoryPath() + path.sep + 'model.json'
 }

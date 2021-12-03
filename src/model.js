@@ -1,5 +1,5 @@
 import * as tf from '@tensorflow/tfjs-node';
-import { NUM_OUTPUT_CLASSES, getModelDirectoryPath } from './utils.js'
+import { NUM_OUTPUT_CLASSES, getModelFilePath } from './utils.js'
 
 const IMAGE_WIDTH = 64
 const IMAGE_HEIGHT = 64
@@ -7,8 +7,8 @@ const IMAGE_CHANNELS = 3
 
 export async function getModel() {
     try {
-        const model = await tf.loadLayersModel(`file:///${getModelDirectoryPath()}/model.json`)
-        console.log(`use saved model in ${getModelDirectoryPath()} ...`)
+        const model = await tf.loadLayersModel(`file:///${getModelFilePath()}`)
+        console.log(`use saved model ${getModelFilePath()} ...`)
 
         const optimizer = tf.train.adam();
         model.compile({

@@ -18,7 +18,6 @@ const BATCH_OFFSET = 10
  * @param {Number} batchNum The batch number to grab from the sketch files
  */
 async function trainBatch(model, batchSize, batchNum) {
-    console.log(`train batch ${batchNum} ...`)
     const [imgs, classes] = await getDataset(batchSize, batchNum)
 
     const [trainX, trainY, testX, testY] = trainTestSplit(imgs, classes)
@@ -35,7 +34,9 @@ async function main() {
     const model = await getModel()
 
     for (let i = 0; i < NUM_BATCHES; i++) {
-        await trainBatch(model, BATCH_SIZE, BATCH_OFFSET + i)
+        const batchNum = BATCH_OFFSET + i
+        console.log(`\n\ntrain batch ${batchNum}/${BATCH_OFFSET + NUM_BATCHES} ...`)
+        await trainBatch(model, BATCH_SIZE, batchNum)
     }
 
     await model.save(`file:///${getModelDirectoryPath()}`)
