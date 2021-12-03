@@ -1,45 +1,64 @@
-import * as tf from '@tensorflow/tfjs';
+import * as tf from '@tensorflow/tfjs-node';
+import { NUM_OUTPUT_CLASSES, getModelDirectoryPath } from './utils.js'
 
-const IMAGE_WIDTH = 256
-const IMAGE_HEIGHT = 256
+const IMAGE_WIDTH = 64
+const IMAGE_HEIGHT = 64
 const IMAGE_CHANNELS = 3
-const NUM_OUTPUT_CLASSES = 3;
 
-const model = tf.sequential()
+export async function getModel() {
+    try {
+        const model = await tf.loadLayersModel(`file:///${getModelDirectoryPath()}/model.json`)
+        console.log(`use saved model ...`)
 
-model.add(tf.layers.conv2d({
-    inputShape: [IMAGE_WIDTH, IMAGE_HEIGHT, IMAGE_CHANNELS],
-    kernelSize: 5,
-    filters: 8,
-    strides: 1,
-    activation: 'relu',
-    kernelInitializer: 'varianceScaling'
-}));
+        const optimizer = tf.train.adam();
+        model.compile({
+            optimizer: optimizer,
+            loss: 'categoricalCrossentropy',
+            metrics: ['accuracy'],
+        });
 
-model.add(tf.layers.maxPooling2d({ poolSize: [2, 2], strides: [2, 2] }));
+        return model
+    } catch {
+        console.log("build new model ...")
+        const model = tf.sequential()
 
-model.add(tf.layers.conv2d({
-    kernelSize: 5,
-    filters: 16,
-    strides: 1,
-    activation: 'relu',
-    kernelInitializer: 'varianceScaling'
-}));
-model.add(tf.layers.maxPooling2d({ poolSize: [2, 2], strides: [2, 2] }));
+        model.add(tf.layers.conv2d({
+            inputShape: [IMAGE_WIDTH, IMAGE_HEIGHT, IMAGE_CHANNELS],
+            kernelSize: 3,
+            filters: 8,
+            strides: 1,
+            activation: 'relu',
+            kernelInitializer: 'varianceScaling'
+        }));
 
-model.add(tf.layers.flatten());
+        model.add(tf.layers.maxPooling2d({ poolSize: [2, 2], strides: [2, 2] }));
 
-model.add(tf.layers.dense({
-    units: NUM_OUTPUT_CLASSES,
-    kernelInitializer: 'varianceScaling',
-    activation: 'softmax'
-}));
+        model.add(tf.layers.conv2d({
+            kernelSize: 3,
+            filters: 16,
+            strides: 1,
+            activation: 'relu',
+            kernelInitializer: 'varianceScaling'
+        }));
+        model.add(tf.layers.maxPooling2d({ poolSize: [2, 2], strides: [2, 2] }));
 
-const optimizer = tf.train.adam();
-model.compile({
-    optimizer: optimizer,
-    loss: 'categoricalCrossentropy',
-    metrics: ['accuracy'],
-});
+        model.add(tf.layers.flatten());
 
-export default model
+        model.add(tf.layers.dense({
+            units: NUM_OUTPUT_CLASSES,
+            kernelInitializer: 'varianceScaling',
+            activation: 'softmax'
+        }));
+
+        const optimizer = tf.train.adam();
+        model.compile({
+            optimizer: optimizer,
+            loss: 'categoricalCrossentropy',
+            metrics: ['accuracy'],
+        });
+
+        return model
+    }
+}
+
+export default getModel

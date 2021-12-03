@@ -1,4 +1,8 @@
-import * as tf from '@tensorflow/tfjs';
+import * as tf from '@tensorflow/tfjs-node';
+import path from 'path'
+
+export const SKETCH_NAMES = ['bus', 'car', 'castle', 'coffee_cup', 'compass', 'cookie', 'crab', 'fork', 'golf_club', 'ice_cream', 'key', 'moon', 'nose', 'octopus', 'paintbrush', 'parachute', 'pizza', 'shark', 'shovel', 'train']
+export const NUM_OUTPUT_CLASSES = SKETCH_NAMES.length
 
 /**
  * Shuffle two arrays in the same way
@@ -33,10 +37,19 @@ export function shuffle(arr1, arr2) {
  */
 export function trainTestSplit(x, y, trainSize = 0.8) {
     const num_train = Math.ceil(x.length * trainSize)
+    const num_test = x.length - num_train
     shuffle(x, y)
 
     const [trainX, trainY] = [x.slice(0, num_train), y.slice(0, num_train)]
     const [testX, testY] = [x.slice(num_train), y.slice(num_train)]
 
-    return [tf.tensor4d(trainX), tf.tensor2d(trainY), tf.tensor4d(testX), tf.tensor2d(testY)]
+    return [tf.tensor4d(trainX), tf.oneHot(tf.tensor1d(trainY, 'int32'), NUM_OUTPUT_CLASSES), tf.tensor4d(testX), tf.oneHot(tf.tensor1d(testY, 'int32'), NUM_OUTPUT_CLASSES)]
+}
+
+/**
+ * Get the absolute file path to the saved model directory
+ * @returns {String}
+ */
+export function getModelDirectoryPath() {
+    return path.resolve('./model').replace('C:\\', '').replace(/\\/g, '/')
 }
