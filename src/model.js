@@ -1,8 +1,8 @@
 import * as tf from '@tensorflow/tfjs-node';
 import { NUM_OUTPUT_CLASSES, getModelFilePath } from './utils.js'
+import { IMAGE_SIZE, IMAGE_SCALE } from './drawing_pixels.js'
 
-const IMAGE_WIDTH = 64
-const IMAGE_HEIGHT = 64
+export const MODEL_IMAGE_SIZE = IMAGE_SIZE * IMAGE_SCALE
 const IMAGE_CHANNELS = 3
 
 export async function getModel() {
@@ -23,9 +23,9 @@ export async function getModel() {
         const model = tf.sequential()
 
         model.add(tf.layers.conv2d({
-            inputShape: [IMAGE_WIDTH, IMAGE_HEIGHT, IMAGE_CHANNELS],
+            inputShape: [MODEL_IMAGE_SIZE, MODEL_IMAGE_SIZE, IMAGE_CHANNELS],
             kernelSize: 5,
-            filters: 8,
+            filters: 4,
             strides: 1,
             activation: 'relu',
             kernelInitializer: 'varianceScaling'
@@ -35,7 +35,7 @@ export async function getModel() {
 
         model.add(tf.layers.conv2d({
             kernelSize: 5,
-            filters: 16,
+            filters: 8,
             strides: 1,
             activation: 'relu',
             kernelInitializer: 'varianceScaling'

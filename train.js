@@ -3,10 +3,13 @@ import { getDataset } from './src/data.js';
 import { trainTestSplit, getModelDirectoryPath } from './src/utils.js'
 
 // How many drawings in each batch?
-const BATCH_SIZE = 300
+const BATCH_SIZE = 100
 
 // How many batches to train the CNN on for this execution?
-const NUM_BATCHES = 2
+const NUM_BATCHES = 10
+
+// How many epochs to train each batch?
+const NUM_EPOCHS = 25
 
 /**
  * Train the model on a single batch
@@ -21,7 +24,7 @@ async function trainBatch(model, batchSize) {
     await model.fit(trainX, trainY, {
         batchSize: batchSize,
         validationData: [testX, testY],
-        epochs: 15,
+        epochs: NUM_EPOCHS,
         shuffle: true
     })
 }

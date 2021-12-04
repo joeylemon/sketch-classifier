@@ -3,6 +3,7 @@ import c from 'canvas'
 const { createCanvas, loadImage } = c
 import { imageDataToPixels } from './src/drawing_pixels.js';
 import { SKETCH_NAMES, getModelDirectoryPath } from './src/utils.js'
+import { MODEL_IMAGE_SIZE } from './src/model.js'
 
 const model = await tf.loadLayersModel(`file:///${getModelDirectoryPath()}/model.json`)
 console.log(`use saved model ...`)
@@ -14,18 +15,17 @@ model.compile({
     metrics: ['accuracy'],
 })
 
-const canvas = createCanvas(64, 64)
+const canvas = createCanvas(MODEL_IMAGE_SIZE, MODEL_IMAGE_SIZE)
 const ctx = canvas.getContext('2d')
 
-loadImage('image.jpeg').then(async (image) => {
-    ctx.drawImage(image, 0, 0, 64, 64)
+loadImage('image.png').then(async (image) => {
+    ctx.drawImage(image, 0, 0, MODEL_IMAGE_SIZE, MODEL_IMAGE_SIZE)
 
     const pixels = imageDataToPixels(ctx, false)
 
     const predictions = model.predict(tf.tensor4d([pixels])).dataSync()
 
-
     for (let i = 0; i < SKETCH_NAMES.length; i++) {
-        console.log(SKETCH_NAMES[i], "\t\t", predictions[i].toFixed(4))
+        console.log(SKETCH_NAMES[i], ":", predictions[i].toFixed(4))
     }
 })
