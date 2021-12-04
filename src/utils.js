@@ -3,7 +3,7 @@ import path from 'path'
 import fs from 'fs'
 import readline from 'readline'
 
-export const SKETCH_NAMES = ['bus', 'car', 'castle', 'coffee_cup', 'compass', 'cookie', 'crab', 'fork', 'golf_club', 'ice_cream', 'key', 'moon', 'nose', 'octopus', 'paintbrush', 'parachute', 'pizza', 'shark', 'shovel', 'train']
+export const SKETCH_NAMES = ['bus', 'car', 'castle', 'coffee_cup', 'compass', 'cookie', 'crab', 'fork', 'golf_club', 'ice_cream', 'key', 'moon', 'octopus', 'paintbrush', 'parachute', 'pizza', 'shark', 'shovel', 'train']
 export const NUM_OUTPUT_CLASSES = SKETCH_NAMES.length
 
 /**
@@ -89,12 +89,9 @@ export async function getFileLineCount(path) {
  * @returns An array of random numbers
  */
 export function getRandomNumbers(max, n) {
-    console.log(`get ${n} rand nums between 0 and ${max}`)
-    const randNums = []
-    while (randNums.length !== n) {
-        const rand = Math.floor(Math.random() * max)
-        if (!randNums.includes(rand))
-            randNums.push(rand)
+    const randNums = new Array(n)
+    for (let i = 0; i < n; i++) {
+        randNums[i] = Math.floor(Math.random() * max)
     }
     return randNums.sort((a, b) => a - b)
 }

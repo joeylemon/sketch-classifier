@@ -6,7 +6,7 @@ import { trainTestSplit, getModelDirectoryPath } from './src/utils.js'
 const BATCH_SIZE = 300
 
 // How many batches to train the CNN on for this execution?
-const NUM_BATCHES = 30
+const NUM_BATCHES = 2
 
 /**
  * Train the model on a single batch

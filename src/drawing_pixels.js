@@ -108,4 +108,4 @@ async function getRandomDrawing() {
         })
 }
 
-// getRandomDrawing()
+getRandomDrawing()

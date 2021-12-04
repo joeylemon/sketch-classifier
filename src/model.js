@@ -24,7 +24,7 @@ export async function getModel() {
 
         model.add(tf.layers.conv2d({
             inputShape: [IMAGE_WIDTH, IMAGE_HEIGHT, IMAGE_CHANNELS],
-            kernelSize: 3,
+            kernelSize: 5,
             filters: 8,
             strides: 1,
             activation: 'relu',
@@ -34,7 +34,7 @@ export async function getModel() {
         model.add(tf.layers.maxPooling2d({ poolSize: [2, 2], strides: [2, 2] }));
 
         model.add(tf.layers.conv2d({
-            kernelSize: 3,
+            kernelSize: 5,
             filters: 16,
             strides: 1,
             activation: 'relu',

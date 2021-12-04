@@ -1,5 +1,6 @@
 import * as ndjson from 'ndjson'
 import fs from 'fs'
+import readline from 'readline'
 import { drawingToPixels } from './drawing_pixels.js'
 import { getFileLineCount, getRandomNumbers, SKETCH_NAMES } from './utils.js'
 
@@ -14,28 +15,30 @@ export async function getDrawings(file, n) {
         const lineCount = await getFileLineCount(file)
         const randLines = getRandomNumbers(lineCount, n)
 
-        let currentLine = randLines.shift()
-        let counter = 0
+        let targetLine = randLines.shift()
+        let currentLine = 0
+
+        const rl = readline.createInterface({
+            input: fs.createReadStream(file),
+            crlfDelay: Infinity
+        })
+
         const drawings = []
+        for await (const line of rl) {
+            if (currentLine++ >= targetLine) {
+                const obj = JSON.parse(line)
 
-        const fileStream = fs.createReadStream(file)
-        fileStream
-            .pipe(ndjson.parse())
-            .on('data', obj => {
-                if (counter === currentLine) {
-                    drawings.push(obj.drawing)
+                drawings.push(obj.drawing)
 
-                    currentLine = randLines.shift()
-                    if (!currentLine) {
-                        fileStream.destroy()
-                        resolve(drawings)
-                    }
+                targetLine = randLines.shift()
+                if (targetLine === undefined) {
+                    rl.close()
+                    return resolve(drawings)
                 }
+            }
+        }
 
-                counter++
-            })
-            .on("error", err => reject(err))
-            .on("end", () => resolve(drawings))
+        resolve(drawings)
     })
 }
 
@@ -61,7 +64,7 @@ export async function getDataset(batchSize) {
         classes = classes.concat(new Array(objs.length).fill(i))
     }
 
-    console.log(`loaded ${SKETCH_NAMES.length}*${batchSize} = ${imgs.length} drawings in ${((Date.now() - start) / 2).toFixed(2)} seconds`)
+    console.log(`loaded ${SKETCH_NAMES.length}*${batchSize} = ${imgs.length} drawings in ${((Date.now() - start) / 1000).toFixed(2)} seconds`)
 
     return [imgs, classes]
 }
