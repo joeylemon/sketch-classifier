@@ -6,15 +6,21 @@
   "type": "module",
   "scripts": {
     "start": "node --max-old-space-size=14000 train.js",
+    "lint": "eslint --fix .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@tensorflow/tfjs": "^3.11.0",
-    "@tensorflow/tfjs-node": "^3.11.0",
     "@tensorflow/tfjs-node-gpu": "^3.11.0",
     "canvas": "^2.8.0",
     "ndjson": "^2.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^7.32.0",
+    "eslint-config-standard": "^16.0.3",
+    "eslint-plugin-import": "^2.25.3",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^5.2.0"
   }
 }

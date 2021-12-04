@@ -1,8 +1,8 @@
 import canvas from 'canvas'
-const { createCanvas } = canvas
 import * as ndjson from 'ndjson'
 import fs from 'fs'
-import { getFileLineCount, SAVE_IMAGES } from './utils.js'
+import { getFileLineCount } from './utils.js'
+const { createCanvas } = canvas
 
 // How big are the original images?
 export const IMAGE_SIZE = 256
@@ -15,9 +15,11 @@ const COLORS = ['white', 'red', 'blue', 'green', 'yellow', 'purple', 'orange', '
 /**
  * Convert the canvas image to an array of RGB pixels
  * @param {CanvasRenderingContext2D} ctx The canvas 2d context
+ * @param {Boolean} scale Whether or not to scale the image down by IMAGE_SCALE
+ * @param {String} savePath If set, save an image of the drawing to this path
  * @returns {Array} An array of RGB pixels
  */
-export function imageDataToPixels(ctx, scale = true) {
+export function imageDataToPixels(ctx, scale = true, savePath = '') {
     let [width, height] = [IMAGE_SIZE * IMAGE_SCALE, IMAGE_SIZE * IMAGE_SCALE]
     let imageData
 
@@ -28,45 +30,46 @@ export function imageDataToPixels(ctx, scale = true) {
         smallCtx.scale(IMAGE_SCALE, IMAGE_SCALE)
         smallCtx.drawImage(ctx.canvas, 0, 0)
 
-        if (SAVE_IMAGES) fs.writeFileSync('./image.png', smallCanvas.toBuffer('image/png'))
+        if (savePath !== '') fs.writeFileSync(savePath, smallCanvas.toBuffer('image/png'))
         imageData = smallCtx.getImageData(0, 0, width, height).data
     } else {
         width = ctx.canvas.width
         height = ctx.canvas.width
-        if (SAVE_IMAGES) fs.writeFileSync('./image.png', ctx.canvas.toBuffer('image/png'))
+        if (savePath !== '') fs.writeFileSync(savePath, ctx.canvas.toBuffer('image/png'))
         imageData = ctx.getImageData(0, 0, width, height).data
     }
 
     // The rows of pixels
-    const pixel_rows = Array(height)
-    let r_idx = 0
+    const pixelRows = Array(height)
+    let rIdx = 0
 
     // The columns of pixels
-    let pixel_cols = Array(width)
-    let c_idx = 0
+    let pixelCols = Array(width)
+    let cIdx = 0
 
     for (let i = 0; i < imageData.length; i += 4) {
         // add the red, green, and blue values to pixels
         // ignore alpha value imageData[i + 3]
-        pixel_cols[c_idx++] = [imageData[i], imageData[i + 1], imageData[i + 2]]
+        pixelCols[cIdx++] = [imageData[i], imageData[i + 1], imageData[i + 2]]
 
         // if we have fill all 256 columns of this row, add to row array
-        if (c_idx === width) {
-            c_idx = 0
-            pixel_rows[r_idx++] = pixel_cols
-            pixel_cols = Array(width)
+        if (cIdx === width) {
+            cIdx = 0
+            pixelRows[rIdx++] = pixelCols
+            pixelCols = Array(width)
         }
     }
 
-    return pixel_rows
+    return pixelRows
 }
 
 /**
  * Convert a drawing to an array of RGB pixels
  * @param {Array} drawing The drawing containing an array of strokes
+ * @param {String} savePath If set, save an image of the drawing to this path
  * @returns {Array} An array of RGB pixels
  */
-export function drawingToPixels(drawing) {
+export function drawingToPixels(drawing, savePath = '') {
     const canvas = createCanvas(IMAGE_SIZE, IMAGE_SIZE)
     const ctx = canvas.getContext('2d')
 
@@ -86,27 +89,33 @@ export function drawingToPixels(drawing) {
         ctx.stroke()
     }
 
-    return imageDataToPixels(ctx)
+    return imageDataToPixels(ctx, true, savePath)
 }
 
-export async function getRandomDrawing() {
-    const sketchSets = fs.readdirSync('./sketches')
-    const randSketch = sketchSets[Math.floor(Math.random() * sketchSets.length)]
+/**
+ * Load and save a random drawing from the sketches directory
+ * @param {String} savePath The path to save the random drawing
+ * @returns {Promise<String>} The name of the random drawing
+ */
+export function saveRandomDrawing(savePath) {
+    return new Promise(async resolve => {
+        const sketchSets = fs.readdirSync('./sketches')
+        const randSketch = sketchSets[Math.floor(Math.random() * sketchSets.length)]
 
-    const lineCount = await getFileLineCount('./sketches/' + randSketch)
-    const targetLine = Math.floor(Math.random() * lineCount)
+        const lineCount = await getFileLineCount('./sketches/' + randSketch)
+        const targetLine = Math.floor(Math.random() * lineCount)
 
-    let counter = 0
-    let drawing
+        let counter = 0
 
-    const fileStream = fs.createReadStream('./sketches/' + randSketch)
-    fileStream
-        .pipe(ndjson.parse())
-        .on('data', obj => {
-            if (counter++ === targetLine) {
-                console.log(`random ${obj.word} on line ${targetLine}`)
-                drawingToPixels(obj.drawing)
-                fileStream.destroy()
-            }
-        })
+        const fileStream = fs.createReadStream('./sketches/' + randSketch)
+        fileStream
+            .pipe(ndjson.parse())
+            .on('data', obj => {
+                if (counter++ === targetLine) {
+                    drawingToPixels(obj.drawing, savePath)
+                    fileStream.destroy()
+                    return resolve(obj.word)
+                }
+            })
+    })
 }

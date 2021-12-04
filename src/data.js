@@ -10,28 +10,28 @@ import { SKETCH_NAMES } from './utils.js'
  * @param {Number} skip The number of drawings to skip before reading
  * @returns {Promise<Array>} The array of drawing strokes
  */
-export async function getDrawings(file, n, skip = 0) {
+export async function getDrawings (file, n, skip = 0) {
     return new Promise((resolve, reject) => {
         const drawings = new Array(n)
         drawings.length = 0
 
-        let num_read = 0
+        let numRead = 0
 
         const fileStream = fs.createReadStream(file)
         fileStream
             .pipe(ndjson.parse())
             .on('data', obj => {
                 if (!obj.recognized) return
-                if (num_read++ < skip) return
+                if (numRead++ < skip) return
 
                 drawings[drawings.length] = obj.drawing
-                if (num_read >= n + skip) {
+                if (numRead >= n + skip) {
                     fileStream.destroy()
                     resolve(drawings.slice(0, n))
                 }
             })
-            .on("error", err => reject(err))
-            .on("end", () => resolve(drawings.slice(0, n)))
+            .on('error', err => reject(err))
+            .on('end', () => resolve(drawings.slice(0, n)))
     })
 }
 
@@ -42,7 +42,7 @@ export async function getDrawings(file, n, skip = 0) {
  * @param {Number} batchNum The batch number to grab from the sketch files
  * @returns {Promise<Array>} An array of images and an array of class labels
  */
-export async function getDataset(batchSize, batchNum) {
+export async function getDataset (batchSize, batchNum) {
     let imgs = []
     let classes = []
 

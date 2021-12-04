@@ -1,36 +1,66 @@
-import * as tf from '@tensorflow/tfjs-node-gpu';
+/**
+ * This script performs a classification on a random drawing from './sketches/'
+ * 
+ * Run it with: node predict.js
+ */
+
+import * as tf from '@tensorflow/tfjs-node-gpu'
 import c from 'canvas'
-const { createCanvas, loadImage } = c
-import { getRandomDrawing, imageDataToPixels } from './src/drawing_pixels.js';
-import { SKETCH_NAMES, getModelDirectoryPath, SAVE_IMAGES } from './src/utils.js'
+import { saveRandomDrawing, imageDataToPixels } from './src/drawing_pixels.js'
+import { SKETCH_NAMES, getModelDirectoryPath } from './src/utils.js'
 import { MODEL_IMAGE_SIZE } from './src/model.js'
+const { createCanvas, loadImage } = c
 
-SAVE_IMAGES = true
+// reset color code
+const RS = '\x1b[0m'
 
-const model = await tf.loadLayersModel(`file:///${getModelDirectoryPath()}/model.json`)
-console.log(`use saved model ...`)
+async function main () {
+    const model = await tf.loadLayersModel(`file:///${getModelDirectoryPath()}/model.json`)
+    console.log('use saved model ...')
 
-const optimizer = tf.train.adam();
-model.compile({
-    optimizer: optimizer,
-    loss: 'categoricalCrossentropy',
-    metrics: ['accuracy'],
-})
+    const optimizer = tf.train.adam()
+    model.compile({
+        optimizer: optimizer,
+        loss: 'categoricalCrossentropy',
+        metrics: ['accuracy']
+    })
 
-// grab and save a random drawing
-await getRandomDrawing()
+    // grab and save a random drawing
+    const drawingName = await saveRandomDrawing('image.png')
+    console.log(`loaded random ${drawingName} drawing ...`)
 
-const canvas = createCanvas(MODEL_IMAGE_SIZE, MODEL_IMAGE_SIZE)
-const ctx = canvas.getContext('2d')
+    // create the canvas to use to convert to a pixels matrix
+    const canvas = createCanvas(MODEL_IMAGE_SIZE, MODEL_IMAGE_SIZE)
+    const ctx = canvas.getContext('2d')
 
-loadImage('image.png').then(async (image) => {
-    ctx.drawImage(image, 0, 0, MODEL_IMAGE_SIZE, MODEL_IMAGE_SIZE)
+    // load the saved random drawing
+    loadImage('image.png').then(async (image) => {
+        // add the drawing to canvas and convert to pixels matrix
+        ctx.drawImage(image, 0, 0, MODEL_IMAGE_SIZE, MODEL_IMAGE_SIZE)
+        const pixels = imageDataToPixels(ctx, false)
 
-    const pixels = imageDataToPixels(ctx, false)
+        // predict the drawing
+        const predictions = model.predict(tf.tensor4d([pixels])).dataSync()
+        const maxProbability = Math.max(...predictions)
 
-    const predictions = model.predict(tf.tensor4d([pixels])).dataSync()
+        console.log('label'.padStart(11, ' '), ':', 'probability')
+        console.log('-'.padStart(11, '-'), ':', '-'.padStart(11, '-'))
 
-    for (let i = 0; i < SKETCH_NAMES.length; i++) {
-        console.log(SKETCH_NAMES[i], ":", predictions[i].toFixed(4))
-    }
-})
+        let predictedIdx = 0
+        for (let i = 0; i < SKETCH_NAMES.length; i++) {
+            let color = ''
+
+            // color the predicted class green
+            if (predictions[i].toFixed(4) === maxProbability.toFixed(4)) {
+                color = '\x1b[0;32m'
+                predictedIdx = i
+            }
+
+            console.log(color, SKETCH_NAMES[i].padStart(10, ' '), ':', predictions[i].toFixed(4), RS)
+        }
+
+        console.log(`got drawing of ${drawingName} and predicted ${SKETCH_NAMES[predictedIdx]} with ${(predictions[predictedIdx] * 100).toFixed(2)}% probability`)
+    })
+}
+
+main()
