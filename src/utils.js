@@ -1,10 +1,13 @@
-import * as tf from '@tensorflow/tfjs-node';
+import * as tf from '@tensorflow/tfjs-node-gpu';
 import path from 'path'
 import fs from 'fs'
 import readline from 'readline'
 
 export const SKETCH_NAMES = ['bus', 'car', 'castle', 'coffee_cup', 'compass', 'cookie', 'crab', 'fork', 'golf_club', 'ice_cream', 'key', 'moon', 'octopus', 'paintbrush', 'parachute', 'pizza', 'shark', 'shovel', 'train']
 export const NUM_OUTPUT_CLASSES = SKETCH_NAMES.length
+
+// Should we save images of the drawings being processed?
+export let SAVE_IMAGES = false
 
 /**
  * Shuffle two arrays in the same way
@@ -94,4 +97,15 @@ export function getRandomNumbers(max, n) {
         randNums[i] = Math.floor(Math.random() * max)
     }
     return randNums.sort((a, b) => a - b)
+}
+
+/**
+ * Get the current time in HH:MM:SS format
+ * @returns {String} The current time
+ */
+export function getCurrentTime() {
+    const ny = new Date().toLocaleString("en-US", { timeZone: "America/New_York" })
+    const d = new Date(ny)
+    const [hours, mins, secs] = [d.getHours(), d.getMinutes(), d.getSeconds()]
+    return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
 }

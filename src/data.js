@@ -1,44 +1,37 @@
 import * as ndjson from 'ndjson'
 import fs from 'fs'
-import readline from 'readline'
 import { drawingToPixels } from './drawing_pixels.js'
-import { getFileLineCount, getRandomNumbers, SKETCH_NAMES } from './utils.js'
+import { SKETCH_NAMES } from './utils.js'
 
 /**
- * Read n random drawings from the given ndjson file
+ * Read the first n drawings from the given ndjson file
  * @param {String} file The file name containing the drawing strokes
  * @param {Number} n The number of drawings to read
+ * @param {Number} skip The number of drawings to skip before reading
  * @returns {Promise<Array>} The array of drawing strokes
  */
-export async function getDrawings(file, n) {
-    return new Promise(async (resolve, reject) => {
-        const lineCount = await getFileLineCount(file)
-        const randLines = getRandomNumbers(lineCount, n)
+export async function getDrawings(file, n, skip = 0) {
+    return new Promise((resolve, reject) => {
+        const drawings = new Array(n)
+        drawings.length = 0
 
-        let targetLine = randLines.shift()
-        let currentLine = 0
+        let num_read = 0
 
-        const rl = readline.createInterface({
-            input: fs.createReadStream(file),
-            crlfDelay: Infinity
-        })
+        const fileStream = fs.createReadStream(file)
+        fileStream
+            .pipe(ndjson.parse())
+            .on('data', obj => {
+                if (!obj.recognized) return
+                if (num_read++ < skip) return
 
-        const drawings = []
-        for await (const line of rl) {
-            if (currentLine++ >= targetLine) {
-                const obj = JSON.parse(line)
-
-                drawings.push(obj.drawing)
-
-                targetLine = randLines.shift()
-                if (targetLine === undefined) {
-                    rl.close()
-                    return resolve(drawings)
+                drawings[drawings.length] = obj.drawing
+                if (num_read >= n + skip) {
+                    fileStream.destroy()
+                    resolve(drawings.slice(0, n))
                 }
-            }
-        }
-
-        resolve(drawings)
+            })
+            .on("error", err => reject(err))
+            .on("end", () => resolve(drawings.slice(0, n)))
     })
 }
 
@@ -46,16 +39,17 @@ export async function getDrawings(file, n) {
  * Get sketches from the saved files
  * @param {Array<String>} sketches The array of sketch names
  * @param {Number} batchSize The number of drawings to use in each batch
+ * @param {Number} batchNum The batch number to grab from the sketch files
  * @returns {Promise<Array>} An array of images and an array of class labels
  */
-export async function getDataset(batchSize) {
+export async function getDataset(batchSize, batchNum) {
     let imgs = []
     let classes = []
 
     const start = Date.now()
 
     for (let i = 0; i < SKETCH_NAMES.length; i++) {
-        const objs = await getDrawings(`./sketches/full_simplified_${SKETCH_NAMES[i]}.ndjson`, batchSize)
+        const objs = await getDrawings(`./sketches/full_simplified_${SKETCH_NAMES[i]}.ndjson`, batchSize, batchNum * batchSize)
 
         // convert the drawing paths to pixel arrays
         imgs = imgs.concat(objs.map(d => drawingToPixels(d)))

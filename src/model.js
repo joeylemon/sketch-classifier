@@ -1,4 +1,4 @@
-import * as tf from '@tensorflow/tfjs-node';
+import * as tf from '@tensorflow/tfjs-node-gpu';
 import { NUM_OUTPUT_CLASSES, getModelFilePath } from './utils.js'
 import { IMAGE_SIZE, IMAGE_SCALE } from './drawing_pixels.js'
 

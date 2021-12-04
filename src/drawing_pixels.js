@@ -2,7 +2,7 @@ import canvas from 'canvas'
 const { createCanvas } = canvas
 import * as ndjson from 'ndjson'
 import fs from 'fs'
-import { getFileLineCount } from './utils.js'
+import { getFileLineCount, SAVE_IMAGES } from './utils.js'
 
 // How big are the original images?
 export const IMAGE_SIZE = 256
@@ -28,12 +28,12 @@ export function imageDataToPixels(ctx, scale = true) {
         smallCtx.scale(IMAGE_SCALE, IMAGE_SCALE)
         smallCtx.drawImage(ctx.canvas, 0, 0)
 
-        // fs.writeFileSync('./image.png', smallCanvas.toBuffer('image/png'))
+        if (SAVE_IMAGES) fs.writeFileSync('./image.png', smallCanvas.toBuffer('image/png'))
         imageData = smallCtx.getImageData(0, 0, width, height).data
     } else {
         width = ctx.canvas.width
         height = ctx.canvas.width
-        // fs.writeFileSync('./image.png', ctx.canvas.toBuffer('image/png'))
+        if (SAVE_IMAGES) fs.writeFileSync('./image.png', ctx.canvas.toBuffer('image/png'))
         imageData = ctx.getImageData(0, 0, width, height).data
     }
 
@@ -89,7 +89,7 @@ export function drawingToPixels(drawing) {
     return imageDataToPixels(ctx)
 }
 
-async function getRandomDrawing() {
+export async function getRandomDrawing() {
     const sketchSets = fs.readdirSync('./sketches')
     const randSketch = sketchSets[Math.floor(Math.random() * sketchSets.length)]
 
@@ -110,5 +110,3 @@ async function getRandomDrawing() {
             }
         })
 }
-
-// getRandomDrawing()
