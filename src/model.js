@@ -19,6 +19,7 @@ export async function getModel() {
 
         return model
     } catch {
+        console.log(`no model found at ${getModelFilePath()}`)
         console.log("build new model ...")
         const model = tf.sequential()
 
