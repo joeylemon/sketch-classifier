@@ -13,15 +13,25 @@ const IMAGE_SCALE = 0.25
  * @param {CanvasRenderingContext2D} ctx The canvas 2d context
  * @returns {Array} An array of RGB pixels
  */
-export function imageDataToPixels(ctx) {
-    // Scale the image down by IMAGE_SCALE
-    const [width, height] = [IMAGE_SIZE * IMAGE_SCALE, IMAGE_SIZE * IMAGE_SCALE]
-    const smallCanvas = createCanvas(width, height)
-    const smallCtx = smallCanvas.getContext('2d')
-    smallCtx.scale(IMAGE_SCALE, IMAGE_SCALE)
-    smallCtx.drawImage(ctx.canvas, 0, 0)
+export function imageDataToPixels(ctx, scale = true) {
+    let [width, height] = [IMAGE_SIZE * IMAGE_SCALE, IMAGE_SIZE * IMAGE_SCALE]
+    let imageData
 
-    const imageData = smallCtx.getImageData(0, 0, width, height).data
+    if (scale) {
+        // Scale the image down by IMAGE_SCALE
+        const smallCanvas = createCanvas(width, height)
+        const smallCtx = smallCanvas.getContext('2d')
+        smallCtx.scale(IMAGE_SCALE, IMAGE_SCALE)
+        smallCtx.drawImage(ctx.canvas, 0, 0)
+
+        fs.writeFileSync('./image.jpeg', smallCanvas.toBuffer('image/jpeg'))
+        imageData = smallCtx.getImageData(0, 0, width, height).data
+    } else {
+        width = ctx.canvas.width
+        height = ctx.canvas.width
+        fs.writeFileSync('./image.jpeg', ctx.canvas.toBuffer('image/jpeg'))
+        imageData = ctx.getImageData(0, 0, width, height).data
+    }
 
     // The rows of pixels
     const pixel_rows = Array(height)
@@ -30,7 +40,7 @@ export function imageDataToPixels(ctx) {
     // The columns of pixels
     let pixel_cols = Array(width)
     let c_idx = 0
-    
+
     for (let i = 0; i < imageData.length; i += 4) {
         // add the red, green, and blue values to pixels
         // ignore alpha value imageData[i + 3]
@@ -71,9 +81,7 @@ export function drawingToPixels(drawing) {
         ctx.stroke()
     }
 
-    fs.writeFileSync('./image.png', canvas.toBuffer('image/png'))
-
     return imageDataToPixels(ctx)
 }
 
-drawingToPixels([[[1,0,12,30,36,38,38,50,63,67,72,74,74,88,96,103,107,104,101,81,75,67,64,59,48,44,43,32,8,4],[96,79,3,1,14,22,77,38,14,13,17,29,80,23,11,15,30,122,129,136,145,175,233,253,254,245,141,131,119,93]]])
+drawingToPixels([[[112,98,77,39,15,2,0,0,14,28,48,61,90,130,174,210,222,237,244,242,227,202,188,161,137,123],[6,4,15,58,95,133,149,164,210,231,249,254,255,243,221,192,175,140,93,77,45,24,18,12,14,24]],[[111,95,100,124,127,138,175],[32,28,48,24,55,48,0]],[[101,86,77,83,101,109,93,85],[175,182,192,206,215,224,230,225]],[[238,212,196,189,194,215,232],[95,90,105,120,131,135,150]],[[34,29,27,38,51,54,66,85],[97,112,146,140,125,136,129,105]],[[119,124,145,156,144,129],[131,104,66,128,137,141]]])

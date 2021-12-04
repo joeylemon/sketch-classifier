@@ -1,8 +1,8 @@
 import * as tf from '@tensorflow/tfjs-node';
 import c from 'canvas'
 const { createCanvas, loadImage } = c
-import { imageDataToPixels } from './drawing_pixels.js';
-import { SKETCH_NAMES, getModelDirectoryPath } from './utils.js'
+import { imageDataToPixels } from './src/drawing_pixels.js';
+import { SKETCH_NAMES, getModelDirectoryPath } from './src/utils.js'
 
 const model = await tf.loadLayersModel(`file:///${getModelDirectoryPath()}/model.json`)
 console.log(`use saved model ...`)
@@ -17,10 +17,10 @@ model.compile({
 const canvas = createCanvas(64, 64)
 const ctx = canvas.getContext('2d')
 
-loadImage('image.png').then(async (image) => {
+loadImage('image.jpeg').then(async (image) => {
     ctx.drawImage(image, 0, 0, 64, 64)
 
-    const pixels = imageDataToPixels(ctx)
+    const pixels = imageDataToPixels(ctx, false)
 
     const predictions = model.predict(tf.tensor4d([pixels])).dataSync()
 

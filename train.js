@@ -9,7 +9,7 @@ const BATCH_SIZE = 200
 const NUM_BATCHES = 50
 
 // Skip the first BATCH_OFFSET batches of each dataset.
-const BATCH_OFFSET = 10
+const BATCH_OFFSET = 60
 
 /**
  * Train the model on a single batch
