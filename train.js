@@ -3,13 +3,13 @@ import { getDataset } from './src/data.js';
 import { trainTestSplit, getModelDirectoryPath } from './src/utils.js'
 
 // How many drawings in each batch?
-const BATCH_SIZE = 100
+const BATCH_SIZE = 75
 
 // How many batches to train the CNN on for this execution?
-const NUM_BATCHES = 10
+const NUM_BATCHES = 100
 
 // How many epochs to train each batch?
-const NUM_EPOCHS = 25
+const NUM_EPOCHS = 20
 
 /**
  * Train the model on a single batch
@@ -35,9 +35,8 @@ async function main() {
     for (let i = 0; i < NUM_BATCHES; i++) {
         console.log(`\n\ntrain batch ${i + 1}/${NUM_BATCHES} ...`)
         await trainBatch(model, BATCH_SIZE)
+        await model.save(`file:///${getModelDirectoryPath()}`)
     }
-
-    await model.save(`file:///${getModelDirectoryPath()}`)
 }
 
 main()
