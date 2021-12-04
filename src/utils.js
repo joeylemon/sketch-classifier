@@ -1,5 +1,7 @@
 import * as tf from '@tensorflow/tfjs-node';
 import path from 'path'
+import fs from 'fs'
+import readline from 'readline'
 
 export const SKETCH_NAMES = ['bus', 'car', 'castle', 'coffee_cup', 'compass', 'cookie', 'crab', 'fork', 'golf_club', 'ice_cream', 'key', 'moon', 'nose', 'octopus', 'paintbrush', 'parachute', 'pizza', 'shark', 'shovel', 'train']
 export const NUM_OUTPUT_CLASSES = SKETCH_NAMES.length
@@ -60,4 +62,39 @@ export function getModelDirectoryPath() {
  */
 export function getModelFilePath() {
     return getModelDirectoryPath() + path.sep + 'model.json'
+}
+
+/**
+ * Count the number of lines in the file efficiently with a read stream
+ * @param {String} path Path to the file
+ * @returns {Promise<Number>} The line count
+ */
+export async function getFileLineCount(path) {
+    const rl = readline.createInterface({
+        input: fs.createReadStream(path),
+        crlfDelay: Infinity
+    })
+
+    let lineCount = 0
+    for await (const line of rl)
+        lineCount++
+
+    return lineCount
+}
+
+/**
+ * Get a sorted array of random numbers between 0 and max
+ * @param {Number} max Maximum value of a random number
+ * @param {Number} n Length of array
+ * @returns An array of random numbers
+ */
+export function getRandomNumbers(max, n) {
+    console.log(`get ${n} rand nums between 0 and ${max}`)
+    const randNums = []
+    while (randNums.length !== n) {
+        const rand = Math.floor(Math.random() * max)
+        if (!randNums.includes(rand))
+            randNums.push(rand)
+    }
+    return randNums.sort((a, b) => a - b)
 }

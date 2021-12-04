@@ -1,6 +1,8 @@
 import canvas from 'canvas'
 const { createCanvas } = canvas
+import * as ndjson from 'ndjson'
 import fs from 'fs'
+import { getFileLineCount } from './utils.js'
 
 // How big are the original images?
 const IMAGE_SIZE = 256
@@ -84,4 +86,26 @@ export function drawingToPixels(drawing) {
     return imageDataToPixels(ctx)
 }
 
-drawingToPixels([[[112,98,77,39,15,2,0,0,14,28,48,61,90,130,174,210,222,237,244,242,227,202,188,161,137,123],[6,4,15,58,95,133,149,164,210,231,249,254,255,243,221,192,175,140,93,77,45,24,18,12,14,24]],[[111,95,100,124,127,138,175],[32,28,48,24,55,48,0]],[[101,86,77,83,101,109,93,85],[175,182,192,206,215,224,230,225]],[[238,212,196,189,194,215,232],[95,90,105,120,131,135,150]],[[34,29,27,38,51,54,66,85],[97,112,146,140,125,136,129,105]],[[119,124,145,156,144,129],[131,104,66,128,137,141]]])
+async function getRandomDrawing() {
+    const sketchSets = fs.readdirSync('./sketches')
+    const randSketch = sketchSets[Math.floor(Math.random() * sketchSets.length)]
+
+    const lineCount = await getFileLineCount('./sketches/' + randSketch)
+    const targetLine = Math.floor(Math.random() * lineCount)
+
+    let counter = 0
+    let drawing
+
+    const fileStream = fs.createReadStream('./sketches/' + randSketch)
+    fileStream
+        .pipe(ndjson.parse())
+        .on('data', obj => {
+            if (counter++ === targetLine) {
+                console.log(`random ${obj.word} on line ${targetLine}`)
+                drawingToPixels(obj.drawing)
+                fileStream.destroy()
+            }
+        })
+}
+
+// getRandomDrawing()

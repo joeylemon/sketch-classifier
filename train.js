@@ -3,22 +3,18 @@ import { getDataset } from './src/data.js';
 import { trainTestSplit, getModelDirectoryPath } from './src/utils.js'
 
 // How many drawings in each batch?
-const BATCH_SIZE = 200
+const BATCH_SIZE = 300
 
 // How many batches to train the CNN on for this execution?
-const NUM_BATCHES = 50
-
-// Skip the first BATCH_OFFSET batches of each dataset.
-const BATCH_OFFSET = 60
+const NUM_BATCHES = 30
 
 /**
  * Train the model on a single batch
  * @param {tf.Sequential} model The Tensorflow model
- * @param {Number} batchSize The number of drawings to use in each batch 
- * @param {Number} batchNum The batch number to grab from the sketch files
+ * @param {Number} batchSize The number of drawings to use in each batch
  */
-async function trainBatch(model, batchSize, batchNum) {
-    const [imgs, classes] = await getDataset(batchSize, batchNum)
+async function trainBatch(model, batchSize) {
+    const [imgs, classes] = await getDataset(batchSize)
 
     const [trainX, trainY, testX, testY] = trainTestSplit(imgs, classes)
 
@@ -34,9 +30,8 @@ async function main() {
     const model = await getModel()
 
     for (let i = 0; i < NUM_BATCHES; i++) {
-        const batchNum = BATCH_OFFSET + i
-        console.log(`\n\ntrain batch ${batchNum}/${BATCH_OFFSET + NUM_BATCHES} ...`)
-        await trainBatch(model, BATCH_SIZE, batchNum)
+        console.log(`\n\ntrain batch ${i + 1}/${NUM_BATCHES} ...`)
+        await trainBatch(model, BATCH_SIZE)
     }
 
     await model.save(`file:///${getModelDirectoryPath()}`)
