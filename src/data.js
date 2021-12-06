@@ -3,7 +3,7 @@ import fs from 'fs'
 import readline from 'readline'
 import { exec } from 'child_process'
 import { drawingToPixels } from './drawing.js'
-import { getSketchLabels, getSketchLabelValue } from './utils.js'
+import { print, getSketchLabels, getSketchLabelValue } from './utils.js'
 
 export class Dataset {
     constructor (path, numSamples) {
@@ -42,8 +42,8 @@ export class Dataset {
 
             this.sampleNum++
 
-            if (this.sampleNum % 50000) {
-                print(`${(this.sampleNum / this.numSamples).toFixed(1)}% complete with processing dataset`)
+            if (this.sampleNum !== 0 && this.sampleNum % 50000 === 0) {
+                print(`${(this.sampleNum / this.numSamples * 100).toFixed(2)}% complete with processing dataset`)
             }
 
             if (this.sampleNum === this.numSamples) { return val }

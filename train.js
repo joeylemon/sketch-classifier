@@ -11,6 +11,12 @@ const args = yargs(hideBin(process.argv))
         default: 'train_data.ndjson',
         description: 'The dataset file to train on'
     })
+    .option('cycles', {
+        alias: 'c',
+        type: 'number',
+        default: 5,
+        description: 'Size of the batches'
+    })
     .option('batch', {
         alias: 'b',
         type: 'number',
@@ -25,27 +31,30 @@ const args = yargs(hideBin(process.argv))
     })
     .parse()
 
-async function main () {
+async function main() {
     const model = await getModel()
 
     print(`found ${getSketchLabels().length} types of drawings`)
 
-    if (args.shuffle) {
-        print('shuffling input files ...')
-        await shuffleFile('train_data.ndjson')
-    }
-
     print('getting number of samples ...')
     const numSamples = await getFileLineCount(args.input)
-    const trainDS = new Dataset(args.input, numSamples).load()
 
-    print(`start training on ${numSamples} samples ...`)
-    await model.fitDataset(trainDS.batch(args.batch), {
-        epochs: 1
-    })
+    for (let i = 0; i < args.cycles; i++) {
+        if (args.shuffle) {
+            print('shuffling input file ...')
+            await shuffleFile(args.input)
+        }
 
-    print('save model to', getModelDirectoryPath())
-    await model.save(`file:///${getModelDirectoryPath()}`)
+        const trainDS = new Dataset(args.input, numSamples).load()
+
+        print(`start training on ${numSamples.toLocaleString()} samples ...`)
+        await model.fitDataset(trainDS.batch(args.batch), {
+            epochs: 1
+        })
+
+        print('save model to', getModelDirectoryPath())
+        await model.save(`file:///${getModelDirectoryPath()}`)
+    }
 }
 
 main()

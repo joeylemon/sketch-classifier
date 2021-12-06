@@ -37,7 +37,7 @@ async function buildDatasetFile () {
     }
 
     print(`created dataset for ${paths.length} labels in ${((Date.now() - startTime) / 1000).toFixed(2)} seconds`)
-    print('\nshuffling entire dataset ...')
+    print('shuffling entire dataset ...')
 
     startTime = Date.now()
     await shuffleFile('train_data.ndjson')

@@ -14,7 +14,11 @@ const { createCanvas, loadImage } = c
 // reset color code
 const RS = '\x1b[0m'
 
-async function main () {
+async function main() {
+    // grab and save a random drawing
+    const drawingName = await saveRandomDrawing('image.png')
+    print(`loaded random ${drawingName} drawing ...`)
+
     const model = await tf.loadLayersModel(`file:///${getModelDirectoryPath()}/model.json`)
     print('use saved model ...')
 
@@ -24,11 +28,6 @@ async function main () {
         loss: 'categoricalCrossentropy',
         metrics: ['accuracy']
     })
-
-    // grab and save a random drawing
-    const sketchLabels = getSketchLabels()
-    const drawingName = await saveRandomDrawing('image.png')
-    print(`loaded random ${drawingName} drawing ...`)
 
     // create the canvas to use to convert to a pixels matrix
     const canvas = createCanvas(MODEL_IMAGE_SIZE, MODEL_IMAGE_SIZE)
@@ -47,6 +46,7 @@ async function main () {
         print('label'.padStart(11, ' '), ':', 'probability')
         print('-'.padStart(11, '-'), ':', '-'.padStart(11, '-'))
 
+        const sketchLabels = getSketchLabels()
         let predictedIdx = 0
         for (let i = 0; i < sketchLabels.length; i++) {
             let color = ''
