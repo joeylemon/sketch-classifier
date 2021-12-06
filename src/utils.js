@@ -24,10 +24,15 @@ export function getSketchLabels () {
  * @returns The numeric label value
  */
 export function getSketchLabelValue (sketchName) {
-    sketchName = sketchName.replace(/ /g, '_')
+    sketchName = sketchName.toLowerCase().replace(/ /g, '_')
 
     if (!sketchLabelDict[sketchName]) {
         const labels = getSketchLabels()
+
+        if (!labels.includes(sketchName)) {
+            throw new Error(`the list of sketch labels does not include given label ${sketchName}`)
+        }
+
         for (let i = 0; i < labels.length; i++) {
             sketchLabelDict[labels[i]] = i
         }
@@ -80,4 +85,11 @@ export function getCurrentTime () {
     const d = new Date(ny)
     const [hours, mins, secs] = [d.getHours(), d.getMinutes(), d.getSeconds()]
     return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
+}
+
+/**
+ * Custom log function with timestamp
+ */
+export function print (...args) {
+    console.log(getCurrentTime(), ...args)
 }

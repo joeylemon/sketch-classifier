@@ -1,6 +1,6 @@
 import canvasPkg from 'canvas'
-import * as ndjson from 'ndjson'
 import fs from 'fs'
+import readline from 'readline'
 import { getFileLineCount } from './utils.js'
 const { createCanvas } = canvasPkg
 
@@ -101,25 +101,24 @@ export function drawingToPixels (drawing, savePath = '') {
  */
 export function saveRandomDrawing (savePath) {
     return new Promise(resolve => {
-        const sketchSets = fs.readdirSync('./sketches')
-        const randSketch = sketchSets[Math.floor(Math.random() * sketchSets.length)]
-
-        getFileLineCount('./sketches/' + randSketch)
-            .then(lineCount => {
+        getFileLineCount('./train_data.json')
+            .then(async lineCount => {
                 const targetLine = Math.floor(Math.random() * lineCount)
 
-                let counter = 0
+                const rl = readline.createInterface({
+                    input: fs.createReadStream('./train_data.json'),
+                    crlfDelay: Infinity
+                })
 
-                const fileStream = fs.createReadStream('./sketches/' + randSketch)
-                fileStream
-                    .pipe(ndjson.parse())
-                    .on('data', obj => {
-                        if (counter++ === targetLine) {
-                            drawingToPixels(obj.drawing, savePath)
-                            fileStream.destroy()
-                            return resolve(obj.word)
-                        }
-                    })
+                let counter = 0
+                for await (const line of rl) {
+                    if (counter++ === targetLine) {
+                        const obj = JSON.parse(line)
+                        drawingToPixels(obj.drawing, savePath)
+                        rl.destroy()
+                        return resolve(obj.word)
+                    }
+                }
             })
     })
 }

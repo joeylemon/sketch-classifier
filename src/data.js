@@ -1,18 +1,16 @@
 import * as tf from '@tensorflow/tfjs-node-gpu'
 import fs from 'fs'
 import readline from 'readline'
+import { exec } from 'child_process'
 import { drawingToPixels } from './drawing.js'
-import { getFileLineCount, getSketchLabels, getSketchLabelValue } from './utils.js'
+import { getSketchLabels, getSketchLabelValue } from './utils.js'
 
 export class Dataset {
-    constructor (path) {
+    constructor (path, numSamples) {
         this.path = path
 
+        this.numSamples = numSamples
         this.numClasses = getSketchLabels().length
-        this.numSamples = 100000
-        getFileLineCount(this.path).then(lines => {
-            this.numSamples = lines
-        })
 
         const rl = readline.createInterface({
             input: fs.createReadStream(path),
@@ -32,6 +30,10 @@ export class Dataset {
         return Array.from({ length: this.numClasses }, (_, k) => k === labelValue ? 1 : 0)
     }
 
+    /**
+     * Generator function which allows Tensorflow to iterate on the input file one line at a time.
+     * This is necessary considering the size of the input dataset.
+     */
     async * dataGenerator () {
         while (this.sampleNum < this.numSamples) {
             const line = await this.it.next()
@@ -39,14 +41,30 @@ export class Dataset {
             const val = { xs: tf.tensor3d(drawingToPixels(obj.drawing)), ys: tf.tensor1d(this.labelArray(getSketchLabelValue(obj.word))) }
 
             this.sampleNum++
+
+            if (this.sampleNum % 50000) {
+                print(`${(this.sampleNum / this.numSamples).toFixed(1)}% complete with processing dataset`)
+            }
+
             if (this.sampleNum === this.numSamples) { return val }
             yield val
         }
     }
 
     load () {
-        console.log('loading data ...')
-        const ds = tf.data.generator(this.dataGenerator.bind(this))
-        return ds
+        return tf.data.generator(this.dataGenerator.bind(this))
     }
+}
+
+/**
+ * Shuffle all of the file's lines using the shuf command
+ * @param {String} path Path to the file
+ */
+export async function shuffleFile (path) {
+    await new Promise((resolve, reject) => {
+        exec(`shuf ${path} -o ${path}`, (err, stdout, stderr) => {
+            if (err) { return reject(err) }
+            resolve()
+        })
+    })
 }

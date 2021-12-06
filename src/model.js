@@ -1,5 +1,5 @@
 import * as tf from '@tensorflow/tfjs-node-gpu'
-import { getSketchLabels, getModelFilePath } from './utils.js'
+import { print, getSketchLabels, getModelFilePath } from './utils.js'
 import { IMAGE_SIZE, IMAGE_SCALE } from './drawing.js'
 
 export const MODEL_IMAGE_SIZE = IMAGE_SIZE * IMAGE_SCALE
@@ -13,7 +13,7 @@ const IMAGE_CHANNELS = 3
 export async function getModel () {
     try {
         const model = await tf.loadLayersModel(`file:///${getModelFilePath()}`)
-        console.log(`use saved model ${getModelFilePath()} ...`)
+        print(`use saved model ${getModelFilePath()} ...`)
 
         const optimizer = tf.train.adam()
         model.compile({
@@ -24,8 +24,8 @@ export async function getModel () {
 
         return model
     } catch {
-        console.log(`no model found at ${getModelFilePath()}`)
-        console.log('build new model ...')
+        print(`no model found at ${getModelFilePath()}`)
+        print('build new model ...')
         const model = tf.sequential()
 
         model.add(tf.layers.conv2d({
