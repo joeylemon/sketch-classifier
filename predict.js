@@ -6,8 +6,8 @@
 
 import * as tf from '@tensorflow/tfjs-node-gpu'
 import c from 'canvas'
-import { saveRandomDrawing, imageDataToPixels } from './src/drawing_pixels.js'
-import { SKETCH_NAMES, getModelDirectoryPath } from './src/utils.js'
+import { saveRandomDrawing, imageDataToPixels } from './src/drawing.js'
+import { getSketchLabels, getModelDirectoryPath } from './src/utils.js'
 import { MODEL_IMAGE_SIZE } from './src/model.js'
 const { createCanvas, loadImage } = c
 
@@ -26,6 +26,7 @@ async function main () {
     })
 
     // grab and save a random drawing
+    const sketchLabels = getSketchLabels()
     const drawingName = await saveRandomDrawing('image.png')
     console.log(`loaded random ${drawingName} drawing ...`)
 
@@ -47,7 +48,7 @@ async function main () {
         console.log('-'.padStart(11, '-'), ':', '-'.padStart(11, '-'))
 
         let predictedIdx = 0
-        for (let i = 0; i < SKETCH_NAMES.length; i++) {
+        for (let i = 0; i < sketchLabels.length; i++) {
             let color = ''
 
             // color the predicted class green
@@ -56,10 +57,10 @@ async function main () {
                 predictedIdx = i
             }
 
-            console.log(color, SKETCH_NAMES[i].padStart(10, ' '), ':', predictions[i].toFixed(4), RS)
+            console.log(color, sketchLabels[i].padStart(10, ' '), ':', predictions[i].toFixed(4), RS)
         }
 
-        console.log(`got drawing of ${drawingName} and predicted ${SKETCH_NAMES[predictedIdx]} with ${(predictions[predictedIdx] * 100).toFixed(2)}% probability`)
+        console.log(`got drawing of ${drawingName} and predicted ${sketchLabels[predictedIdx]} with ${(predictions[predictedIdx] * 100).toFixed(2)}% probability`)
     })
 }
 

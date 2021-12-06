@@ -1,7 +1,7 @@
 import * as ndjson from 'ndjson'
 import fs from 'fs'
-import { drawingToPixels } from './drawing_pixels.js'
-import { SKETCH_NAMES } from './utils.js'
+import { drawingToPixels } from './drawing.js'
+import { getSketchLabels } from './utils.js'
 
 /**
  * Read the first n drawings from the given ndjson file
@@ -43,13 +43,14 @@ export async function getDrawings (file, n, skip = 0) {
  * @returns {Promise<Array>} An array of images and an array of class labels
  */
 export async function getDataset (batchSize, batchNum) {
+    const sketchNames = getSketchLabels()
     let imgs = []
     let classes = []
 
     const start = Date.now()
 
-    for (let i = 0; i < SKETCH_NAMES.length; i++) {
-        const objs = await getDrawings(`./sketches/full_simplified_${SKETCH_NAMES[i]}.ndjson`, batchSize, batchNum * batchSize)
+    for (let i = 0; i < sketchNames.length; i++) {
+        const objs = await getDrawings(`./sketches/full_simplified_${sketchNames[i]}.ndjson`, batchSize, batchNum * batchSize)
 
         // convert the drawing paths to pixel arrays
         imgs = imgs.concat(objs.map(d => drawingToPixels(d)))
@@ -58,7 +59,7 @@ export async function getDataset (batchSize, batchNum) {
         classes = classes.concat(new Array(objs.length).fill(i))
     }
 
-    console.log(`loaded ${SKETCH_NAMES.length}*${batchSize} = ${imgs.length} drawings in ${((Date.now() - start) / 1000).toFixed(2)} seconds`)
+    console.log(`loaded ${sketchNames.length}*${batchSize} = ${imgs.length} drawings in ${((Date.now() - start) / 1000).toFixed(2)} seconds`)
 
     return [imgs, classes]
 }

@@ -1,6 +1,6 @@
 import * as tf from '@tensorflow/tfjs-node-gpu'
-import { NUM_OUTPUT_CLASSES, getModelFilePath } from './utils.js'
-import { IMAGE_SIZE, IMAGE_SCALE } from './drawing_pixels.js'
+import { getSketchLabels, getModelFilePath } from './utils.js'
+import { IMAGE_SIZE, IMAGE_SCALE } from './drawing.js'
 
 export const MODEL_IMAGE_SIZE = IMAGE_SIZE * IMAGE_SCALE
 const IMAGE_CHANNELS = 3
@@ -51,7 +51,7 @@ export async function getModel () {
         model.add(tf.layers.flatten())
 
         model.add(tf.layers.dense({
-            units: NUM_OUTPUT_CLASSES,
+            units: getSketchLabels().length,
             kernelInitializer: 'varianceScaling',
             activation: 'softmax'
         }))
