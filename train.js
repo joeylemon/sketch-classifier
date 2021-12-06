@@ -31,7 +31,7 @@ const args = yargs(hideBin(process.argv))
     })
     .parse()
 
-async function main() {
+async function main () {
     const model = await getModel()
 
     print(`found ${getSketchLabels().length} types of drawings`)

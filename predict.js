@@ -14,7 +14,10 @@ const { createCanvas, loadImage } = c
 // reset color code
 const RS = '\x1b[0m'
 
-async function main() {
+async function main () {
+    const sketchLabels = getSketchLabels()
+    console.log(JSON.stringify(sketchLabels))
+
     // grab and save a random drawing
     const drawingName = await saveRandomDrawing('image.png')
     print(`loaded random ${drawingName} drawing ...`)
@@ -43,10 +46,9 @@ async function main() {
         const predictions = model.predict(tf.tensor4d([pixels])).dataSync()
         const maxProbability = Math.max(...predictions)
 
-        print('label'.padStart(11, ' '), ':', 'probability')
-        print('-'.padStart(11, '-'), ':', '-'.padStart(11, '-'))
+        console.log('label'.padStart(11, ' '), ':', 'probability')
+        console.log('-'.padStart(11, '-'), ':', '-'.padStart(11, '-'))
 
-        const sketchLabels = getSketchLabels()
         let predictedIdx = 0
         for (let i = 0; i < sketchLabels.length; i++) {
             let color = ''
@@ -57,7 +59,7 @@ async function main() {
                 predictedIdx = i
             }
 
-            print(color, sketchLabels[i].padStart(10, ' '), ':', predictions[i].toFixed(4), RS)
+            console.log(color, sketchLabels[i].padStart(10, ' '), ':', predictions[i].toFixed(4), RS)
         }
 
         print(`got drawing of ${drawingName} and predicted ${sketchLabels[predictedIdx]} with ${(predictions[predictedIdx] * 100).toFixed(2)}% probability`)

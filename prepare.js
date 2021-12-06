@@ -11,8 +11,8 @@ const MAX_LINES = 100000
  */
 async function buildDatasetFile () {
     let startTime = Date.now()
-    const paths = fs.readdirSync('./sketches').map(name => `./sketches/${name}`)
 
+    const paths = fs.readdirSync('./sketches').map(name => `./sketches/${name}`)
     for (const path of paths) {
         const loopStart = Date.now()
         let lineCount = await getFileLineCount(path)

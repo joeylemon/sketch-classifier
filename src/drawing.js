@@ -1,4 +1,3 @@
-import { print } from '@tensorflow/tfjs-core'
 import canvasPkg from 'canvas'
 import fs from 'fs'
 import readline from 'readline'
@@ -101,23 +100,26 @@ export function drawingToPixels (drawing, savePath = '') {
  * @returns {Promise<String>} The name of the random drawing
  */
 export function saveRandomDrawing (savePath) {
-    const inPath = 'train_data.ndjson'
     return new Promise(resolve => {
-        getFileLineCount(inPath)
+        const sketchSets = fs.readdirSync('./sketches')
+        const randSketch = sketchSets[Math.floor(Math.random() * sketchSets.length)]
+        const path = './sketches/' + randSketch
+
+        getFileLineCount(path)
             .then(async lineCount => {
                 const targetLine = Math.floor(Math.random() * lineCount)
-                print(`find line ${targetLine} in ${inPath}`)
 
                 const rl = readline.createInterface({
-                    input: fs.createReadStream(inPath),
+                    input: fs.createReadStream(path),
                     crlfDelay: Infinity
                 })
 
                 let counter = 0
                 for await (const line of rl) {
-                    if (counter++ === targetLine) {
+                    if (counter++ >= targetLine) {
                         const obj = JSON.parse(line)
                         drawingToPixels(obj.drawing, savePath)
+                        rl.close()
                         return resolve(obj.word)
                     }
                 }
