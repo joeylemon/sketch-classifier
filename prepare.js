@@ -3,11 +3,14 @@ import readline from 'readline'
 import { exec } from 'child_process'
 import { getFileLineCount } from './src/utils.js'
 
+// set to Infinity to read all lines
+const MAX_LINES = 100000
+
 /**
  * Build the training and testing dataset files of all drawings in the sketches directory
  * @param {Number} trainRatio Ratio of drawings to be used for training
  */
-async function buildDatasetFiles(trainRatio = 0.8) {
+async function buildDatasetFiles (trainRatio = 0.8) {
     let startTime = Date.now()
     const paths = fs.readdirSync('./sketches').map(name => `./sketches/${name}`)
     // const paths = ['./sketches/full_simplified_bus.ndjson']
@@ -15,7 +18,9 @@ async function buildDatasetFiles(trainRatio = 0.8) {
 
     for (const path of paths) {
         const loopStart = Date.now()
-        const lineCount = await getFileLineCount(path)
+        let lineCount = await getFileLineCount(path)
+        lineCount = Math.min(MAX_LINES, lineCount)
+
         const trainLines = Math.floor(lineCount * trainRatio)
 
         const rl = readline.createInterface({
@@ -28,6 +33,7 @@ async function buildDatasetFiles(trainRatio = 0.8) {
 
         let counter = 0
         for await (const line of rl) {
+            if (counter > lineCount) break
             const writer = counter++ < trainLines ? trainWriter : testWriter
             writer.write(line + '\n')
         }
@@ -59,4 +65,6 @@ async function buildDatasetFiles(trainRatio = 0.8) {
     console.log(`randomly shuffled train and test files in ${((Date.now() - startTime) / 1000).toFixed(2)} seconds`)
 }
 
-await buildDatasetFiles()
+(async () => {
+    await buildDatasetFiles()
+})()

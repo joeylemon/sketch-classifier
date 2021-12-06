@@ -100,24 +100,26 @@ export function drawingToPixels (drawing, savePath = '') {
  * @returns {Promise<String>} The name of the random drawing
  */
 export function saveRandomDrawing (savePath) {
-    return new Promise(async resolve => {
+    return new Promise(resolve => {
         const sketchSets = fs.readdirSync('./sketches')
         const randSketch = sketchSets[Math.floor(Math.random() * sketchSets.length)]
 
-        const lineCount = await getFileLineCount('./sketches/' + randSketch)
-        const targetLine = Math.floor(Math.random() * lineCount)
+        getFileLineCount('./sketches/' + randSketch)
+            .then(lineCount => {
+                const targetLine = Math.floor(Math.random() * lineCount)
 
-        let counter = 0
+                let counter = 0
 
-        const fileStream = fs.createReadStream('./sketches/' + randSketch)
-        fileStream
-            .pipe(ndjson.parse())
-            .on('data', obj => {
-                if (counter++ === targetLine) {
-                    drawingToPixels(obj.drawing, savePath)
-                    fileStream.destroy()
-                    return resolve(obj.word)
-                }
+                const fileStream = fs.createReadStream('./sketches/' + randSketch)
+                fileStream
+                    .pipe(ndjson.parse())
+                    .on('data', obj => {
+                        if (counter++ === targetLine) {
+                            drawingToPixels(obj.drawing, savePath)
+                            fileStream.destroy()
+                            return resolve(obj.word)
+                        }
+                    })
             })
     })
 }

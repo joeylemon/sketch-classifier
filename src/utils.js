@@ -1,69 +1,9 @@
-import * as tf from '@tensorflow/tfjs-node-gpu'
 import path from 'path'
 import fs from 'fs'
 import readline from 'readline'
 
 let sketchNames = []
-let sketchLabelDict = {}
-
-/**
- * Shuffle two arrays in the same way
- * @param {Array} arr1
- * @param {Array} arr2
- */
-export function shuffle (arr1, arr2) {
-    if (arr1.length !== arr2.length) { throw new Error(`array sizes do not match for shuffle: ${arr1.length} vs ${arr2.length}`) }
-
-    let index = arr1.length
-    let rnd, tmp1, tmp2
-
-    while (index) {
-        rnd = Math.floor(Math.random() * index)
-        index -= 1
-        tmp1 = arr1[index]
-        tmp2 = arr2[index]
-        arr1[index] = arr1[rnd]
-        arr2[index] = arr2[rnd]
-        arr1[rnd] = tmp1
-        arr2[rnd] = tmp2
-    }
-}
-
-/**
- * Shuffle a single array
- * @param {Array} array
- */
-function shuffleOne (array) {
-    let currentIndex = array.length; let randomIndex
-
-    while (currentIndex != 0) {
-        randomIndex = Math.floor(Math.random() * currentIndex)
-        currentIndex--;
-
-        [array[currentIndex], array[randomIndex]] = [
-            array[randomIndex], array[currentIndex]]
-    }
-
-    return array
-}
-
-/**
- * Randomly split the dataset into training and testing
- * @param {Array} x Features array
- * @param {Array} y Labels array
- * @param {Number} trainSize The ratio of the training set size
- * @returns {Array} Tensors of the training and testing sets
- */
-export function trainTestSplit (x, y, trainSize = 0.8) {
-    const numClasses = getSketchLabels().length
-    const numTrain = Math.ceil(x.length * trainSize)
-    shuffle(x, y)
-
-    const [trainX, trainY] = [x.slice(0, numTrain), y.slice(0, numTrain)]
-    const [testX, testY] = [x.slice(numTrain), y.slice(numTrain)]
-
-    return [tf.tensor4d(trainX), tf.oneHot(tf.tensor1d(trainY, 'int32'), numClasses), tf.tensor4d(testX), tf.oneHot(tf.tensor1d(testY, 'int32'), numClasses)]
-}
+const sketchLabelDict = {}
 
 /**
  * Get the array of sketch labels to train the model with
@@ -129,20 +69,6 @@ export async function getFileLineCount (path) {
     for await (const line of rl) { lineCount++ }
 
     return lineCount
-}
-
-/**
- * Get a sorted array of random numbers between 0 and max
- * @param {Number} max Maximum value of a random number
- * @param {Number} n Length of array
- * @returns An array of random numbers
- */
-export function getRandomNumbers (max, n) {
-    const randNums = new Array(n)
-    for (let i = 0; i < n; i++) {
-        randNums[i] = Math.floor(Math.random() * max)
-    }
-    return randNums.sort((a, b) => a - b)
 }
 
 /**
