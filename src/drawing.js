@@ -1,8 +1,8 @@
-import canvas from 'canvas'
+import canvasPkg from 'canvas'
 import * as ndjson from 'ndjson'
 import fs from 'fs'
 import { getFileLineCount } from './utils.js'
-const { createCanvas } = canvas
+const { createCanvas } = canvasPkg
 
 // How big are the original images?
 export const IMAGE_SIZE = 256
@@ -12,6 +12,9 @@ export const IMAGE_SCALE = 0.25
 
 const COLORS = ['white', 'red', 'blue', 'green', 'yellow', 'purple', 'orange', 'gray', 'cyan', 'pink']
 
+const canvas = createCanvas(IMAGE_SIZE, IMAGE_SIZE)
+const ctx = canvas.getContext('2d')
+
 /**
  * Convert the canvas image to an array of RGB pixels
  * @param {CanvasRenderingContext2D} ctx The canvas 2d context
@@ -19,7 +22,7 @@ const COLORS = ['white', 'red', 'blue', 'green', 'yellow', 'purple', 'orange', '
  * @param {String} savePath If set, save an image of the drawing to this path
  * @returns {Array} An array of RGB pixels
  */
-export function imageDataToPixels(ctx, scale = true, savePath = '') {
+export function imageDataToPixels (ctx, scale = true, savePath = '') {
     let [width, height] = [IMAGE_SIZE * IMAGE_SCALE, IMAGE_SIZE * IMAGE_SCALE]
     let imageData
 
@@ -69,9 +72,8 @@ export function imageDataToPixels(ctx, scale = true, savePath = '') {
  * @param {String} savePath If set, save an image of the drawing to this path
  * @returns {Array} An array of RGB pixels
  */
-export function drawingToPixels(drawing, savePath = '') {
-    const canvas = createCanvas(IMAGE_SIZE, IMAGE_SIZE)
-    const ctx = canvas.getContext('2d')
+export function drawingToPixels (drawing, savePath = '') {
+    ctx.clearRect(0, 0, IMAGE_SIZE, IMAGE_SIZE)
 
     // drawing is an array containing 2 arrays (x, y) representing a stroke
     for (let j = 0; j < drawing.length; j++) {
@@ -97,7 +99,7 @@ export function drawingToPixels(drawing, savePath = '') {
  * @param {String} savePath The path to save the random drawing
  * @returns {Promise<String>} The name of the random drawing
  */
-export function saveRandomDrawing(savePath) {
+export function saveRandomDrawing (savePath) {
     return new Promise(async resolve => {
         const sketchSets = fs.readdirSync('./sketches')
         const randSketch = sketchSets[Math.floor(Math.random() * sketchSets.length)]

@@ -1,6 +1,6 @@
 /**
  * This script performs a classification on a random drawing from './sketches/'
- * 
+ *
  * Run it with: node predict.js
  */
 

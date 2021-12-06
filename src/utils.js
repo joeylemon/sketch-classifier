@@ -4,13 +4,14 @@ import fs from 'fs'
 import readline from 'readline'
 
 let sketchNames = []
+let sketchLabelDict = {}
 
 /**
  * Shuffle two arrays in the same way
  * @param {Array} arr1
  * @param {Array} arr2
  */
-export function shuffle(arr1, arr2) {
+export function shuffle (arr1, arr2) {
     if (arr1.length !== arr2.length) { throw new Error(`array sizes do not match for shuffle: ${arr1.length} vs ${arr2.length}`) }
 
     let index = arr1.length
@@ -29,13 +30,31 @@ export function shuffle(arr1, arr2) {
 }
 
 /**
+ * Shuffle a single array
+ * @param {Array} array
+ */
+function shuffleOne (array) {
+    let currentIndex = array.length; let randomIndex
+
+    while (currentIndex != 0) {
+        randomIndex = Math.floor(Math.random() * currentIndex)
+        currentIndex--;
+
+        [array[currentIndex], array[randomIndex]] = [
+            array[randomIndex], array[currentIndex]]
+    }
+
+    return array
+}
+
+/**
  * Randomly split the dataset into training and testing
  * @param {Array} x Features array
  * @param {Array} y Labels array
  * @param {Number} trainSize The ratio of the training set size
  * @returns {Array} Tensors of the training and testing sets
  */
-export function trainTestSplit(x, y, trainSize = 0.8) {
+export function trainTestSplit (x, y, trainSize = 0.8) {
     const numClasses = getSketchLabels().length
     const numTrain = Math.ceil(x.length * trainSize)
     shuffle(x, y)
@@ -50,7 +69,7 @@ export function trainTestSplit(x, y, trainSize = 0.8) {
  * Get the array of sketch labels to train the model with
  * @returns {Array<String>} Array of sketch labels
  */
-export function getSketchLabels() {
+export function getSketchLabels () {
     if (sketchNames.length === 0) {
         const files = fs.readdirSync('./sketches')
         sketchNames = files.map(name => /full_simplified_(\w+).ndjson/.exec(name)[1])
@@ -60,10 +79,28 @@ export function getSketchLabels() {
 }
 
 /**
+ * Get the numeric value [0...n] of the sketch name
+ * @param {String} sketchName Sketch label value
+ * @returns The numeric label value
+ */
+export function getSketchLabelValue (sketchName) {
+    sketchName = sketchName.replace(/ /g, '_')
+
+    if (!sketchLabelDict[sketchName]) {
+        const labels = getSketchLabels()
+        for (let i = 0; i < labels.length; i++) {
+            sketchLabelDict[labels[i]] = i
+        }
+    }
+
+    return sketchLabelDict[sketchName]
+}
+
+/**
  * Get the absolute file path to the saved model directory
  * @returns {String}
  */
-export function getModelDirectoryPath() {
+export function getModelDirectoryPath () {
     return path.resolve('./model').replace('C:\\', '').split(path.sep).join(path.posix.sep)
 }
 
@@ -71,7 +108,7 @@ export function getModelDirectoryPath() {
  * Get the absolute file path to the saved model JSON file
  * @returns {String}
  */
-export function getModelFilePath() {
+export function getModelFilePath () {
     return getModelDirectoryPath() + path.sep + 'model.json'
 }
 
@@ -80,7 +117,7 @@ export function getModelFilePath() {
  * @param {String} path Path to the file
  * @returns {Promise<Number>} The line count
  */
-export async function getFileLineCount(path) {
+export async function getFileLineCount (path) {
     const rl = readline.createInterface({
         input: fs.createReadStream(path),
         crlfDelay: Infinity
@@ -100,7 +137,7 @@ export async function getFileLineCount(path) {
  * @param {Number} n Length of array
  * @returns An array of random numbers
  */
-export function getRandomNumbers(max, n) {
+export function getRandomNumbers (max, n) {
     const randNums = new Array(n)
     for (let i = 0; i < n; i++) {
         randNums[i] = Math.floor(Math.random() * max)
@@ -112,7 +149,7 @@ export function getRandomNumbers(max, n) {
  * Get the current time in HH:MM:SS format
  * @returns {String} The current time
  */
-export function getCurrentTime() {
+export function getCurrentTime () {
     const ny = new Date().toLocaleString('en-US', { timeZone: 'America/New_York' })
     const d = new Date(ny)
     const [hours, mins, secs] = [d.getHours(), d.getMinutes(), d.getSeconds()]

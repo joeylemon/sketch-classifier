@@ -1,65 +1,39 @@
-import * as ndjson from 'ndjson'
+import * as tf from '@tensorflow/tfjs-node-gpu'
 import fs from 'fs'
+import readline from 'readline'
 import { drawingToPixels } from './drawing.js'
-import { getSketchLabels } from './utils.js'
+import { getSketchLabels, getSketchLabelValue } from './utils.js'
 
-/**
- * Read the first n drawings from the given ndjson file
- * @param {String} file The file name containing the drawing strokes
- * @param {Number} n The number of drawings to read
- * @param {Number} skip The number of drawings to skip before reading
- * @returns {Promise<Array>} The array of drawing strokes
- */
-export async function getDrawings (file, n, skip = 0) {
-    return new Promise((resolve, reject) => {
-        const drawings = new Array(n)
-        drawings.length = 0
+export class Dataset {
+    constructor(path) {
+        this.path = path
+        this.numClasses = getSketchLabels().length
 
-        let numRead = 0
-
-        const fileStream = fs.createReadStream(file)
-        fileStream
-            .pipe(ndjson.parse())
-            .on('data', obj => {
-                if (!obj.recognized) return
-                if (numRead++ < skip) return
-
-                drawings[drawings.length] = obj.drawing
-                if (numRead >= n + skip) {
-                    fileStream.destroy()
-                    resolve(drawings.slice(0, n))
-                }
-            })
-            .on('error', err => reject(err))
-            .on('end', () => resolve(drawings.slice(0, n)))
-    })
-}
-
-/**
- * Get sketches from the saved files
- * @param {Array<String>} sketches The array of sketch names
- * @param {Number} batchSize The number of drawings to use in each batch
- * @param {Number} batchNum The batch number to grab from the sketch files
- * @returns {Promise<Array>} An array of images and an array of class labels
- */
-export async function getDataset (batchSize, batchNum) {
-    const sketchNames = getSketchLabels()
-    let imgs = []
-    let classes = []
-
-    const start = Date.now()
-
-    for (let i = 0; i < sketchNames.length; i++) {
-        const objs = await getDrawings(`./sketches/full_simplified_${sketchNames[i]}.ndjson`, batchSize, batchNum * batchSize)
-
-        // convert the drawing paths to pixel arrays
-        imgs = imgs.concat(objs.map(d => drawingToPixels(d)))
-
-        // set the label for this class
-        classes = classes.concat(new Array(objs.length).fill(i))
+        const rl = readline.createInterface({
+            input: fs.createReadStream(path),
+            crlfDelay: Infinity
+        })
+        this.it = rl[Symbol.asyncIterator]()
     }
 
-    console.log(`loaded ${sketchNames.length}*${batchSize} = ${imgs.length} drawings in ${((Date.now() - start) / 1000).toFixed(2)} seconds`)
+    /**
+     * Get an array of zeroes except for a one at the index of the label value
+     * @param {Number} labelValue The numeric label value [0...numClasses]
+     * @returns {Array<Number>}
+     */
+    labelArray(labelValue) {
+        return Array.from({ length: this.numClasses }, (_, k) => k === labelValue ? 1 : 0)
+    }
 
-    return [imgs, classes]
+    async * dataGenerator() {
+        const line = await this.it.next()
+        const obj = JSON.parse(line.value)
+        yield { xs: tf.tensor3d(drawingToPixels(obj.drawing)), ys: tf.tensor1d(this.labelArray(getSketchLabelValue(obj.word))) }
+    }
+
+    load() {
+        console.log('loading data ...')
+        const ds = tf.data.generator(this.dataGenerator.bind(this))
+        return ds;
+    }
 }
