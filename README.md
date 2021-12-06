@@ -19,7 +19,12 @@ Each image is scaled to 64x64 pixels before being fed into the network. Below is
 
 First, download the sketches you wish to use to train the model to a directory named `sketches/`. The data is in the form of `.ndjson` files and can be downloaded from [Google Cloud Storage](https://console.cloud.google.com/storage/browser/quickdraw_dataset/full/simplified;tab=objects?prefix=&forceOnObjectsSortingFiltering=false).
 
-Then, run the training script with:
+Then, you must prepare the data into training and testing files. This can be done with the prepare.js script:
+```sh
+> node prepare.js
+```
+
+This will create `test_data.ndjson` and `train_data.ndjson` containing shuffled and split records from every dataset in `sketches/`. Now, you may run the training script with:
 ```sh
 > node train.js
 ```
