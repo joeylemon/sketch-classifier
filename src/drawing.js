@@ -20,7 +20,7 @@ const ctx = canvas.getContext('2d')
  * @param {CanvasRenderingContext2D} ctx The canvas 2d context
  * @param {Boolean} scale Whether or not to scale the image down by IMAGE_SCALE
  * @param {String} savePath If set, save an image of the drawing to this path
- * @returns {Array} An array of RGB pixels
+ * @returns {Array[64][64][3]} An array of RGB pixels
  */
 export function imageDataToPixels (ctx, scale = true, savePath = '') {
     let [width, height] = [IMAGE_SIZE * IMAGE_SCALE, IMAGE_SIZE * IMAGE_SCALE]
@@ -70,7 +70,7 @@ export function imageDataToPixels (ctx, scale = true, savePath = '') {
  * Convert a drawing to an array of RGB pixels
  * @param {Array} drawing The drawing containing an array of strokes
  * @param {String} savePath If set, save an image of the drawing to this path
- * @returns {Array} An array of RGB pixels
+ * @returns {Array[64][64][3]} An array of RGB pixels
  */
 export function drawingToPixels (drawing, savePath = '') {
     ctx.clearRect(0, 0, IMAGE_SIZE, IMAGE_SIZE)
