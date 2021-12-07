@@ -14,8 +14,8 @@ const args = yargs(hideBin(process.argv))
     .option('cycles', {
         alias: 'c',
         type: 'number',
-        default: 5,
-        description: 'Size of the batches'
+        default: 1,
+        description: 'Number of cycles to train with the entire dataset'
     })
     .option('batch', {
         alias: 'b',
