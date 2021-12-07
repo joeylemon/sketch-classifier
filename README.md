@@ -1,6 +1,9 @@
 # Sketch Classifier
 
-A Tensorflow.js script to construct and train a convolutional neural network to classify sketches. This script is built to make use of Google's ["Quick, Draw!"](https://github.com/googlecreativelab/quickdraw-dataset) dataset. Google's dataset is provided in the form of drawing strokes instead of images. Therefore, during the training of the model, these strokes were used to generate images on-the-fly to be fed into the network. Additionally, to provide the network with even more context on stroke patterns, each individual stroke is colored differently, as seen below. White is the first stroke, red is the second, blue is the third, etc.
+A [Tensorflow.js](https://www.tensorflow.org/js) program to construct and train a convolutional neural network to classify sketches. This program is built to make use of Google's ["Quick, Draw!"](https://github.com/googlecreativelab/quickdraw-dataset) dataset. The model saved in this repository was trained on over 9 million drawings of 65 different types. To speed up the training process, this program uses the tfjs-node-gpu package to utilize Tensorflow's C binary and perform tensor operations on the GPU with CUDA.
+
+## Background
+Google's dataset is provided in the form of drawing strokes instead of images. Therefore, during the training of the model, these strokes are used to generate images on-the-fly to be fed into the network. Additionally, to provide the network with even more context on stroke patterns, each individual stroke is colored differently, as seen below. White is the first stroke, red is the second, blue is the third, etc.
 
 <p align="center"><img src="https://i.imgur.com/skoPqCw.jpg" /></p>
 
