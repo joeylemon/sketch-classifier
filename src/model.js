@@ -8,7 +8,7 @@ const IMAGE_CHANNELS = 3
 /**
  * Attempt to load a saved model from utils.getModelFilePath().
  * If no saved model is found, construct a new one.
- * @returns {tf.Sequential} The Tensorflow model
+ * @returns {Promise<tf.Sequential>} The Tensorflow model
  */
 export async function getModel () {
     try {
@@ -30,7 +30,7 @@ export async function getModel () {
 
         model.add(tf.layers.conv2d({
             inputShape: [MODEL_IMAGE_SIZE, MODEL_IMAGE_SIZE, IMAGE_CHANNELS],
-            kernelSize: 5,
+            kernelSize: 3,
             filters: 4,
             strides: 1,
             activation: 'relu',
@@ -40,8 +40,17 @@ export async function getModel () {
         model.add(tf.layers.maxPooling2d({ poolSize: [2, 2], strides: [2, 2] }))
 
         model.add(tf.layers.conv2d({
-            kernelSize: 5,
+            kernelSize: 3,
             filters: 8,
+            strides: 1,
+            activation: 'relu',
+            kernelInitializer: 'varianceScaling'
+        }))
+        model.add(tf.layers.maxPooling2d({ poolSize: [2, 2], strides: [2, 2] }))
+
+        model.add(tf.layers.conv2d({
+            kernelSize: 3,
+            filters: 16,
             strides: 1,
             activation: 'relu',
             kernelInitializer: 'varianceScaling'

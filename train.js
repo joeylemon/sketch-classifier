@@ -39,6 +39,7 @@ async function main () {
     print('getting number of samples ...')
     const numSamples = await getFileLineCount(args.input)
 
+    print(`start training the model for ${args.cycles} cycles ...`)
     for (let i = 0; i < args.cycles; i++) {
         if (args.shuffle) {
             print('shuffling input file ...')
