@@ -18,6 +18,27 @@ Each image is scaled to 64x64 pixels before being fed into the network. Below is
 | flatten_Flatten1 (Flatten)  | [null,1352]  | 0  |
 | dense_Dense1 (Dense)  | [null,19]  | 25707  |
 
+## Data
+
+Because of the massive amount of data provided by the "Quick, Draw!" dataset, data must be ingested and prepared in certain ways to prevent memory overflows. Tensorflow provides the tf.data.Dataset class, which serves to represent any arbitrary data to be passed into other Tensorflow methods. This Dataset class can be constructed in a way to use an iterator to hide the implementation of data retrieval as well as allow for a theoretically infinite amount of data to be retrieved. To build this class in this program, we use a Javascript generator function to natively create an iterable function. An example of this can be in the code snippet seen below:
+
+```js
+async * dataGenerator () {
+    while (this.sampleNum < this.numSamples) {
+        const line = await this.it.next()
+        const obj = JSON.parse(line.value)
+        const val = { xs: tf.tensor3d(drawingToPixels(obj.drawing)), ys: tf.tensor1d(this.labelArray(getSketchLabelValue(obj.word))) }
+
+        if (this.sampleNum++ === this.numSamples) { return val }
+        yield val
+    }
+}
+
+load () {
+    return tf.data.generator(this.dataGenerator.bind(this))
+}
+```
+
 ## Usage
 
 First, download the sketches you wish to use to train the model to a directory named `sketches/`. The data is in the form of `.ndjson` files and can be downloaded from [Google Cloud Storage](https://console.cloud.google.com/storage/browser/quickdraw_dataset/full/simplified;tab=objects?prefix=&forceOnObjectsSortingFiltering=false).
